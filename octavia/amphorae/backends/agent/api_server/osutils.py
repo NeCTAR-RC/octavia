@@ -245,11 +245,7 @@ class BaseOS(object):
     @classmethod
     def bring_interfaces_up(cls, ip, primary_interface, secondary_interface):
         cls._bring_if_down(primary_interface)
-        if secondary_interface:
-            cls._bring_if_down(secondary_interface)
         cls._bring_if_up(primary_interface, 'VIP')
-        if secondary_interface:
-            cls._bring_if_up(secondary_interface, 'VIP', flush=False)
 
     def has_ifup_all(self):
         return True
