@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+. /usr/share/debconf/confmodule
+CONF=/etc/octavia/octavia.conf
+
+#PKGOS-INCLUDE#
+
+pkgos_var_user_group octavia
+pkgos_dbc_read_conf -pkg octavia-common ${CONF} database connection octavia $@
+pkgos_rabbit_read_conf ${CONF} oslo_messaging_rabbit octavia
+pkgos_read_admin_creds ${CONF} keystone_authtoken octavia
+
+db_go
+
+exit 0

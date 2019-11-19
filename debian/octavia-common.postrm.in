@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+#PKGOS-INCLUDE#
+
+if [ "${1}" = "purge" ] ; then
+	pkgos_dbc_postrm octavia octavia-common $@
+
+	rm -rf /var/lib/octavia || true
+        rm -rf /var/log/octavia || true
+        rm -rf /var/lock/octavia || true
+
+	rm -f /etc/octavia/vitrage.conf
+	rm -f /etc/octavia/policy.json
+	[ -d /etc/octavia ] && rmdir --ignore-fail-on-non-empty /etc/octavia
+fi
+
+#DEBHELPER#
+
+exit 0

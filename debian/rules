@@ -1,0 +1,85 @@
+#!/usr/bin/make -f
+
+include /usr/share/openstack-pkg-tools/pkgos.make
+
+%:
+	dh $@ --buildsystem=python_distutils --with python3,systemd,sphinxdoc
+
+override_dh_auto_clean:
+	python3 setup.py clean
+
+override_dh_clean:
+	dh_clean
+	find . -iname '*.pyc' -delete
+	rm -f debian/*.init debian/*.service debian/*.upstart
+	rm -rf build
+	rm -rf octavia.sqlite
+	rm -rf .eggs
+	rm -rf doc/source/contributor/devref/flow_diagrams
+	rm -rf doc/source/contributor/modules
+	rm -f doc/source/configuration/_static/octavia.policy.yaml.sample
+	rm -f doc/source/contributor/devref/erd.svg
+	rm -f debian/octavia-api.postinst debian/octavia-api.config debian/octavia-common.postinst debian/octavia-common.config
+
+override_dh_auto_build:
+	set -e ; for i in $(PYTHON3S) ; do \
+		python3 setup.py build --force ; \
+	done
+
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_func octavia-api.postinst
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_func octavia-api.config
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_func octavia-common.postinst
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_func octavia-common.config
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_postrm octavia-common.postrm
+	pkgos-merge-templates octavia-api octavia endpoint
+	pkgos-merge-templates octavia-common octavia db rabbit ksat
+
+override_dh_auto_test:
+ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	pkgos-dh_auto_test --no-py2 'octavia\.tests\.unit.*'
+endif
+
+override_dh_auto_install:
+	echo "Do nothing here..."
+
+override_dh_install:
+	for i in $(PYTHON3S) ; do \
+		python$$i setup.py install --root=debian/tmp --install-layout=deb ; \
+	done
+
+	# Generate the octavia.conf config using installed python-octavia files.
+	mkdir -p $(CURDIR)/debian/octavia-common/usr/share/octavia-common
+	PYTHONPATH=$(CURDIR)/debian/tmp/usr/lib/python3/dist-packages oslo-config-generator \
+		--output-file $(CURDIR)/debian/octavia-common/usr/share/octavia-common/octavia.conf \
+		--wrap-width 140 \
+		--namespace octavia \
+		--namespace oslo.db \
+		--namespace oslo.log \
+		--namespace oslo.messaging \
+		--namespace keystonemiddleware.auth_token
+
+	# Same with policy.conf
+	PYTHONPATH=$(CURDIR)/debian/tmp/usr/lib/python3/dist-packages oslopolicy-sample-generator \
+		--output-file $(CURDIR)/debian/octavia-common/usr/share/octavia-common/policy.json \
+		--format json \
+		--namespace octavia
+
+	# Restore sanity...
+	pkgos-fix-config-default $(CURDIR)/debian/octavia-common/usr/share/octavia-common/octavia.conf keystone_notifications enable True
+
+	rm -rf $(CURDIR)/debian/tmp/usr/etc
+	find debian/tmp/  -type d -name __pycache__ -exec rm -r {} \+
+
+	dh_install
+
+override_dh_sphinxdoc:
+ifeq (,$(findstring nodoc, $(DEB_BUILD_OPTIONS)))
+	python3 -m sphinx $(SPHINXOPTS) -b html doc/source $(CURDIR)/debian/octavia-doc/usr/share/doc/octavia-doc/html
+	dh_sphinxdoc -O--buildsystem=python_distutils
+endif
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+override_dh_python3:
+	dh_python3 --shebang=/usr/bin/python3

@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -e
+
+CONF=/etc/octavia/octavia.conf
+
+#PKGOS-INCLUDE#
+
+if [ "$1" = "configure" ] || [ "$1" = "reconfigure" ] ; then
+    . /usr/share/debconf/confmodule
+    . /usr/share/dbconfig-common/dpkg/postinst
+
+    pkgos_var_user_group octavia /bin/sh
+
+    # Create config files if they don't exist
+    pkgos_write_new_conf octavia octavia.conf
+    pkgos_write_new_conf octavia policy.json
+
+    db_get octavia/configure_db
+    if [ "$RET" = "true" ]; then
+        pkgos_dbc_postinst ${CONF} database connection octavia $@
+        echo "Now doing octavia-db-manage upgrade head: this may take a while..."
+        su octavia -s /bin/sh -c "octavia-db-manage upgrade head"
+    fi
+
+    pkgos_rabbit_write_conf ${CONF} oslo_messaging_rabbit octavia
+    pkgos_write_admin_creds ${CONF} keystone_authtoken octavia
+
+    chown -R root:octavia /etc/octavia
+
+fi
+
+#DEBHELPER#
+
+exit 0
