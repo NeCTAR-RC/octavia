@@ -694,7 +694,7 @@ INIT_UNKOWN = 'unknown'
 VALID_INIT_SYSTEMS = (INIT_SYSTEMD, INIT_SYSVINIT, INIT_UPSTART)
 INIT_PATH = '/sbin/init'
 
-SYSTEMD_DIR = '/usr/lib/systemd/system'
+SYSTEMD_DIR = '/etc/systemd/system'
 SYSVINIT_DIR = '/etc/init.d'
 UPSTART_DIR = '/etc/init'
 
