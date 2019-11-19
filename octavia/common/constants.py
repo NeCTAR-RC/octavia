@@ -727,7 +727,7 @@ GLANCE_IMAGE_ACTIVE = 'active'
 
 INIT_PATH = '/sbin/init'
 
-SYSTEMD_DIR = '/usr/lib/systemd/system'
+SYSTEMD_DIR = '/etc/systemd/system'
 
 INIT_PROC_COMM_PATH = '/proc/1/comm'
 
