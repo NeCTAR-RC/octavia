@@ -247,7 +247,6 @@ class LoadBalancersController(base.BaseController):
         if load_balancer.vip_qos_policy_id:
             validate.qos_policy_exists(
                 qos_policy_id=load_balancer.vip_qos_policy_id)
-        validate.network_allowed_by_config(load_balancer.vip_network_id)
 
     def _create_vip_port_if_not_exist(self, load_balancer_db):
         """Create vip port."""
@@ -476,6 +475,11 @@ class LoadBalancersController(base.BaseController):
 
             if az:
                 lb_dict['availability_zone'] = az.name
+
+            # Validate the network as soon as we have the AZ data
+            validate.network_allowed_by_config(
+                load_balancer.vip_network_id,
+                valid_networks=az_dict.get(constants.VALID_VIP_NETWORKS))
 
             db_lb = self.repositories.create_load_balancer_and_vip(
                 lock_session, lb_dict, vip_dict)
