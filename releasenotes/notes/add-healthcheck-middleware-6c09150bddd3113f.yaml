@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    Added the oslo-middleware healthcheck app into wsgi pipeline
+    Hitting /healthcheck will return a 200. For more information
+    see https://docs.openstack.org/oslo.middleware/latest/reference/healthcheck_plugins.html

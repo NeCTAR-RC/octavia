@@ -18,6 +18,7 @@ import keystonemiddleware.audit as audit_middleware
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_middleware import cors
+from oslo_middleware import healthcheck
 from oslo_middleware import http_proxy_to_wsgi
 from oslo_middleware import request_id
 import pecan
@@ -70,6 +71,7 @@ def setup_app(pecan_config=None, debug=False, argv=None):
 def _wrap_app(app):
     """Wraps wsgi app with additional middlewares."""
     app = request_id.RequestId(app)
+    app = healthcheck.Healthcheck(app)
 
     if CONF.audit.enabled:
         try:

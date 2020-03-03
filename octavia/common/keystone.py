@@ -21,7 +21,7 @@ from octavia.common import constants
 
 LOG = logging.getLogger(__name__)
 
-_NOAUTH_PATHS = ['/', '/load-balancer/']
+_NOAUTH_PATHS = ['/', '/load-balancer/', '/healthcheck']
 
 
 class KeystoneSession(object):
