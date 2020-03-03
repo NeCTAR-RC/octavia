@@ -615,6 +615,11 @@ class AmphoraAPIClientBase(object):
         self.head = functools.partial(self.request, 'head')
 
         self.session = requests.Session()
+        if CONF.haproxy_amphora.http_proxy:
+            self.session.proxies = {
+                "http": CONF.haproxy_amphora.http_proxy,
+                "https": CONF.haproxy_amphora.http_proxy,
+            }
         self.session.cert = CONF.haproxy_amphora.client_cert
         self.ssl_adapter = CustomHostNameCheckingAdapter()
         self.session.mount('https://', self.ssl_adapter)
