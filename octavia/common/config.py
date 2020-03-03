@@ -367,6 +367,9 @@ haproxy_amphora_opts = [
                        '%B %U %[ssl_c_verify] %{+Q}[ssl_c_s_dn] %b %s %Tt '
                        '%tsc',
                help=_('Log format string for user flow logging.')),
+    cfg.StrOpt('http_proxy',
+               default=None,
+               help=_('HTTP proxy to use when talking to amphora')),
 
     # REST server
     cfg.IPOpt('bind_host', default='::',  # nosec
