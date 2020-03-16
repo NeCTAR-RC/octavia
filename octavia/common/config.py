@@ -100,6 +100,13 @@ api_opts = [
                help=_("The minimum health monitor delay interval for the "
                       "UDP-CONNECT Health Monitor type. A negative integer "
                       "value means 'no limit'.")),
+    cfg.BoolOpt('healthcheck_enabled', default=False,
+                help=_("When True, the oslo middleware healthcheck endpoint "
+                       "is enabled in the Octavia API.")),
+    cfg.StrOpt('default_listener_ciphers',
+               default=constants.CIPHERS_OWASP_SUITE_B,
+               help=_("Default OpenSSL cipher string (colon-separated) for "
+                      "new TLS-enabled listeners.")),
 ]
 
 # Options only used by the amphora agent
