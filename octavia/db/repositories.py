@@ -34,6 +34,7 @@ from sqlalchemy.orm import subqueryload
 from octavia.common import constants as consts
 from octavia.common import data_models
 from octavia.common import exceptions
+from octavia.common import restricted_zones
 from octavia.common import validate
 from octavia.db import models
 
@@ -1935,6 +1936,34 @@ class SparesPoolRepository(BaseRepository):
 
 class AvailabilityZoneRepository(_GetALLExceptDELETEDIdMixin, BaseRepository):
     model_class = models.AvailabilityZone
+
+    def get(self, session, project_id=None, **filters):
+        zone = super().get(session, **filters)
+        if zone is None or not CONF.nectar.restrict_zones \
+           or project_id is None:
+            return zone
+
+        zones = restricted_zones.get_restricted_zones(project_id)
+        if zones is not None and zone.name not in zones:
+            return None
+        return zone
+
+    def get_all(self, session, pagination_helper=None,
+                query_options=None, project_id=None, **filters):
+        all_zones = super().get_all(session, pagination_helper, query_options,
+                                    **filters)
+        if not CONF.nectar.restrict_zones or project_id is None:
+            return all_zones
+
+        zones = restricted_zones.get_restricted_zones(project_id)
+        if zones is None:
+            return all_zones
+
+        allowed_zones = []
+        for zone in all_zones[0]:
+            if zone.name in zones:
+                allowed_zones.append(zone)
+        return (allowed_zones, [])
 
     def get_availability_zone_metadata_dict(self, session,
                                             availability_zone_name):
