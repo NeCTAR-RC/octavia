@@ -65,12 +65,14 @@ class AvailabilityZonesController(base.BaseController):
         context = pcontext.get('octavia_context')
         self._auth_validate_action(context, context.project_id,
                                    constants.RBAC_GET_ALL)
+
         with context.session.begin():
             db_availability_zones, links = (
                 self.repositories.availability_zone.get_all(
-                    context.session,
+                    context.session, project_id=context.project_id,
                     pagination_helper=pcontext.get(
                         constants.PAGINATION_HELPER)))
+
         result = self._convert_db_to_type(
             db_availability_zones,
             [availability_zone_types.AvailabilityZoneResponse])
