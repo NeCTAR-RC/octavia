@@ -35,6 +35,7 @@ from octavia.api.v2.types import load_balancer as lb_types
 from octavia.common import constants
 from octavia.common import data_models
 from octavia.common import exceptions
+from octavia.common import restricted_zones
 from octavia.common import stats
 from octavia.common import utils
 import octavia.common.validate as validate
@@ -351,20 +352,63 @@ class LoadBalancersController(base.BaseController):
                                                 value=load_balancer.flavor_id)
 
     def _validate_and_return_az_dict(self, lock_session, driver, lb_dict):
-
+        az = None
         az_dict = {}
         if 'availability_zone' in lb_dict:
+            LOG.debug("Requested AZ %s", lb_dict['availability_zone'])
             try:
                 az = self.repositories.availability_zone.get(
-                    lock_session, name=lb_dict['availability_zone'])
-                az_dict = (
-                    self.repositories.availability_zone
-                    .get_availability_zone_metadata_dict(lock_session, az.name)
-                )
+                    lock_session, name=lb_dict['availability_zone'],
+                    project_id=lb_dict['project_id'])
+                if az:
+                    az_dict = (
+                        self.repositories.availability_zone
+                        .get_availability_zone_metadata_dict(
+                            lock_session, az.name)
+                    )
+                else:
+                    raise sa_exception.NoResultFound()
             except sa_exception.NoResultFound as e:
                 raise exceptions.ValidationException(
                     detail=_("Invalid availability_zone.")) from e
+        elif CONF.nectar.restrict_zones:
+            zones = restricted_zones.get_restricted_zones(
+                lb_dict['project_id'])
+            LOG.debug("restricted_zones=%s", zones)
+            if zones:
+                for zone in zones:
+                    try:
+                        LOG.debug("Trying to find zone %s", zone)
+                        az = self.repositories.availability_zone.get(
+                            lock_session, name=zone,
+                            project_id=lb_dict['project_id'])
+                        if az:
+                            az_dict = (
+                                self.repositories.availability_zone
+                                .get_availability_zone_metadata_dict(
+                                    lock_session, az.name)
+                            )
+                            break
+                    except sa_exception.NoResultFound:
+                        pass
+                if not az_dict:
+                    raise exceptions.ValidationException(
+                        detail=_("No availability zones."))
+            else:
+                try:
+                    az = self.repositories.availability_zone.get(
+                        lock_session,
+                        name=CONF.nectar.default_availability_zone)
+                    az_dict = (
+                        self.repositories.availability_zone
+                        .get_availability_zone_metadata_dict(lock_session,
+                                                             az.name)
+                    )
+                except sa_exception.NoResultFound as e:
+                    raise exceptions.ValidationException(
+                        detail=_("Invalid availability_zone.")) from e
 
+        LOG.debug("Got az_dict %s", az_dict)
         # Make sure the driver will still accept the availability zone metadata
         if az_dict:
             try:
@@ -376,12 +420,13 @@ class LoadBalancersController(base.BaseController):
                     prov=driver.name, user_msg="This provider does not support"
                                                " availability zones.") from e
 
-        return az_dict
+        return az_dict, az
 
-    def _validate_availability_zone(self, session, load_balancer):
+    def _validate_availability_zone(self, context, load_balancer):
         if not isinstance(load_balancer.availability_zone, wtypes.UnsetType):
             az = self.repositories.availability_zone.get(
-                session, name=load_balancer.availability_zone)
+                context.session, name=load_balancer.availability_zone,
+                project_id=context.project_id)
             if not az:
                 raise exceptions.ValidationException(
                     detail=_("Invalid availability zone."))
@@ -413,7 +458,7 @@ class LoadBalancersController(base.BaseController):
 
         self._validate_flavor(context.session, load_balancer)
 
-        self._validate_availability_zone(context.session, load_balancer)
+        self._validate_availability_zone(context, load_balancer)
 
         provider = self._get_provider(context.session, load_balancer)
 
@@ -447,8 +492,12 @@ class LoadBalancersController(base.BaseController):
             flavor_dict = self._apply_flavor_to_lb_dict(lock_session, driver,
                                                         lb_dict)
 
-            az_dict = self._validate_and_return_az_dict(lock_session, driver,
-                                                        lb_dict)
+            az_dict, az = self._validate_and_return_az_dict(lock_session,
+                                                            driver,
+                                                            lb_dict)
+            if az:
+                lb_dict['availability_zone'] = az.name
+
             # Validate the network as soon as we have the AZ data
             validate.network_allowed_by_config(
                 load_balancer.vip_network_id,
