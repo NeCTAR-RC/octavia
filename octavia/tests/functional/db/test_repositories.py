@@ -66,6 +66,9 @@ class BaseRepositoryTest(base.OctaviaDBTestBase):
         self.quota_repo = repo.QuotasRepository()
         self.flavor_repo = repo.FlavorRepository()
         self.flavor_profile_repo = repo.FlavorProfileRepository()
+        self.availability_zone_repo = repo.AvailabilityZoneRepository()
+        self.availability_zone_profile_repo = \
+            repo.AvailabilityZoneProfileRepository()
 
     def test_get_all_return_value(self):
         pool_list, _ = self.pool_repo.get_all(self.session,
@@ -4475,3 +4478,139 @@ class FlavorRepositoryTest(BaseRepositoryTest):
         self.assertRaises(sa_exception.NoResultFound,
                           self.flavor_repo.get_flavor_provider,
                           self.session, self.FAKE_UUID_1)
+
+
+class AvailabilityZoneRepositoryTest(BaseRepositoryTest):
+
+    PROVIDER_NAME = 'provider1'
+
+    def create_availability_zone_profile(self):
+        azp = self.availability_zone_profile_repo.create(
+            self.session, id=uuidutils.generate_uuid(),
+            name="azp1", provider_name=self.PROVIDER_NAME,
+            availability_zone_data='{"image": "ubuntu"}')
+        return azp
+
+    def create_availability_zone(self, name):
+        azp = self.create_availability_zone_profile()
+        availability_zone = self.availability_zone_repo.create(
+            self.session, name=name,
+            availability_zone_profile_id=azp.id, description='test',
+            enabled=True)
+        return availability_zone
+
+    def test_get(self):
+        availability_zone = self.create_availability_zone(
+            name='availability_zone')
+        new_availability_zone = self.availability_zone_repo.get(
+            self.session, name=availability_zone.name)
+        self.assertIsInstance(new_availability_zone, models.AvailabilityZone)
+        self.assertEqual(availability_zone, new_availability_zone)
+
+    def test_get_all(self):
+        az1 = self.create_availability_zone(name='availability_zone1')
+        az2 = self.create_availability_zone(name='availability_zone2')
+        az_list, _ = self.availability_zone_repo.get_all(
+            self.session, query_options=defer('enabled'))
+        self.assertIsInstance(az_list, list)
+        self.assertEqual(2, len(az_list))
+        self.assertEqual(az1, az_list[0])
+        self.assertEqual(az2, az_list[1])
+
+    @mock.patch('octavia.db.repositories.restricted_zones')
+    def test_get_restricted_zones(self, restricted_zones):
+        restricted_zones.get_restricted_zones.return_value = None
+        project_id = 'fake-pid'
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+
+        availability_zone = self.create_availability_zone(
+            name='availability_zone')
+        new_availability_zone = self.availability_zone_repo.get(
+            self.session, name=availability_zone.name, project_id=project_id)
+        self.assertIsInstance(new_availability_zone, models.AvailabilityZone)
+        self.assertEqual(availability_zone, new_availability_zone)
+
+    @mock.patch('octavia.db.repositories.restricted_zones')
+    def test_get_all_restricted_zones(self, restricted_zones):
+        restricted_zones.get_restricted_zones.return_value = None
+        project_id = 'fake-pid'
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+
+        az1 = self.create_availability_zone(name='availability_zone1')
+        az2 = self.create_availability_zone(name='availability_zone2')
+        az_list, _ = self.availability_zone_repo.get_all(
+            self.session, query_options=defer('enabled'),
+            project_id=project_id)
+        self.assertIsInstance(az_list, list)
+        self.assertEqual(2, len(az_list))
+        self.assertEqual(az1, az_list[0])
+        self.assertEqual(az2, az_list[1])
+
+    @mock.patch('octavia.db.repositories.restricted_zones')
+    def test_get_restricted_zones_is_restricted(self, restricted_zones):
+        restricted_zones.get_restricted_zones.return_value = \
+            ['availability_zone']
+        project_id = 'fake-pid'
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+
+        availability_zone = self.create_availability_zone(
+            name='availability_zone')
+        new_availability_zone = self.availability_zone_repo.get(
+            self.session, name=availability_zone.name, project_id=project_id)
+        self.assertIsInstance(new_availability_zone, models.AvailabilityZone)
+        self.assertEqual(availability_zone, new_availability_zone)
+
+    @mock.patch('octavia.db.repositories.restricted_zones')
+    def test_get_all_restricted_zones_is_restricted(self, restricted_zones):
+        restricted_zones.get_restricted_zones.return_value = \
+            ['availability_zone1', 'availability_zone2']
+        restricted_zones.get_restricted_zones.return_value = None
+        project_id = 'fake-pid'
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+
+        az1 = self.create_availability_zone(name='availability_zone1')
+        az2 = self.create_availability_zone(name='availability_zone2')
+        az_list, _ = self.availability_zone_repo.get_all(
+            self.session, query_options=defer('enabled'),
+            project_id=project_id)
+        self.assertIsInstance(az_list, list)
+        self.assertEqual(2, len(az_list))
+        self.assertEqual(az1, az_list[0])
+        self.assertEqual(az2, az_list[1])
+
+    @mock.patch('octavia.db.repositories.restricted_zones')
+    def test_get_restricted_zones_is_restricted_negative(self,
+                                                         restricted_zones):
+        restricted_zones.get_restricted_zones.return_value = \
+            ['bogus']
+        project_id = 'fake-pid'
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+
+        availability_zone = self.create_availability_zone(
+            name='availability_zone')
+        new_availability_zone = self.availability_zone_repo.get(
+            self.session, name=availability_zone.name, project_id=project_id)
+        self.assertIsNone(new_availability_zone)
+
+    @mock.patch('octavia.db.repositories.restricted_zones')
+    def test_get_all_restricted_zones_is_restricted_negative(self,
+                                                             restricted_zones):
+        restricted_zones.get_restricted_zones.return_value = \
+            ['availability_zone1', 'bogus']
+        project_id = 'fake-pid'
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+
+        az1 = self.create_availability_zone(name='availability_zone1')
+        self.create_availability_zone(name='availability_zone2')
+        az_list, _ = self.availability_zone_repo.get_all(
+            self.session, query_options=defer('enabled'),
+            project_id=project_id)
+        self.assertIsInstance(az_list, list)
+        self.assertEqual(1, len(az_list))
+        self.assertEqual(az1, az_list[0])
