@@ -66,7 +66,7 @@ class AvailabilityZonesController(base.BaseController):
                                    constants.RBAC_GET_ALL)
         db_availability_zones, links = (
             self.repositories.availability_zone.get_all(
-                context.session,
+                context.session, project_id=context.project_id,
                 pagination_helper=pcontext.get(constants.PAGINATION_HELPER)))
         result = self._convert_db_to_type(
             db_availability_zones,
