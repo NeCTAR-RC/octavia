@@ -1040,6 +1040,75 @@ class TestLoadBalancer(base.BaseAPITest):
         api_lb = self.test_create(availability_zone=az.get('name'))
         self.assertEqual(zone_name, api_lb.get('availability_zone'))
 
+    @mock.patch('octavia.common.restricted_zones.get_restricted_zones')
+    def test_create_with_availability_zone_restricted_zones(
+            self, get_restricted_zones, **optionals):
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+        get_restricted_zones.return_value = ['nova']
+        zone_name = 'nova'
+        azp = self.create_availability_zone_profile(
+            'test1', 'noop_driver', '{"compute_zone": "%s"}' % zone_name)
+        az = self.create_availability_zone(zone_name, 'description',
+                                           azp.get('id'), True)
+
+        api_lb = self.test_create(availability_zone=az.get('name'))
+        self.assertEqual(zone_name, api_lb.get('availability_zone'))
+
+    @mock.patch('octavia.common.restricted_zones.get_restricted_zones')
+    def test_create_with_availability_zone_restricted_zones_none(
+            self, get_restricted_zones, **optionals):
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+        get_restricted_zones.return_value = None
+        zone_name = 'nova'
+        azp = self.create_availability_zone_profile(
+            'test1', 'noop_driver', '{"compute_zone": "%s"}' % zone_name)
+        az = self.create_availability_zone(zone_name, 'description',
+                                           azp.get('id'), True)
+
+        api_lb = self.test_create(availability_zone=az.get('name'))
+        self.assertEqual(zone_name, api_lb.get('availability_zone'))
+
+    @mock.patch('octavia.common.restricted_zones.get_restricted_zones')
+    def test_create_with_availability_zone_restricted_zones_default(
+            self, get_restricted_zones, **optionals):
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+        conf.config(group='nectar', default_availability_zone='nova')
+        get_restricted_zones.return_value = None
+        zone_name = 'nova'
+        azp = self.create_availability_zone_profile(
+            'test1', 'noop_driver', '{"compute_zone": "%s"}' % zone_name)
+        self.create_availability_zone(zone_name, 'description',
+                                      azp.get('id'), True)
+
+        api_lb = self.test_create()
+        self.assertEqual(zone_name, api_lb.get('availability_zone'))
+
+    @mock.patch('octavia.common.restricted_zones.get_restricted_zones')
+    def test_create_with_availability_zone_restricted_zones_negative(
+            self, get_restricted_zones, **optionals):
+        conf = self.useFixture(oslo_fixture.Config(cfg.CONF))
+        conf.config(group='nectar', restrict_zones=True)
+        get_restricted_zones.return_value = ['bogus']
+        zone_name = 'nova'
+        azp = self.create_availability_zone_profile(
+            'test1', 'noop_driver', '{"compute_zone": "%s"}' % zone_name)
+        az = self.create_availability_zone(zone_name, 'description',
+                                           azp.get('id'), True)
+
+        lb_json = {'name': 'test1',
+                   'vip_subnet_id': uuidutils.generate_uuid(),
+                   'project_id': self.project_id,
+                   'availability_zone': az.get('name'),
+                   }
+        lb_json.update(optionals)
+        body = self._build_body(lb_json)
+        response = self.post(self.LBS_PATH, body, status=400)
+        ref_faultstring = 'Validation failure: Invalid availability_zone.'
+        self.assertEqual(ref_faultstring, response.json.get('faultstring'))
+
     def test_create_az_disabled(self, **optionals):
         zone_name = 'nova'
         azp = self.create_availability_zone_profile(
