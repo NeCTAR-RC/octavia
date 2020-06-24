@@ -720,6 +720,14 @@ driver_agent_opts = [
                        'will launch these agents at startup.'))
 ]
 
+nectar_opts = [
+    cfg.BoolOpt('restrict_zones', default=False,
+                help=_('Restrict availability zones')),
+    cfg.StrOpt('default_availability_zone',
+               default=None,
+               help=_('Default AZ to use is none choosen and no restricted zones')),
+]
+
 # Register the configuration options
 cfg.CONF.register_opts(core_opts)
 cfg.CONF.register_opts(api_opts, group='api_settings')
@@ -741,6 +749,7 @@ cfg.CONF.register_opts(neutron_opts, group='neutron')
 cfg.CONF.register_opts(quota_opts, group='quotas')
 cfg.CONF.register_opts(audit_opts, group='audit')
 cfg.CONF.register_opts(driver_agent_opts, group='driver_agent')
+cfg.CONF.register_opts(nectar_opts, group='nectar')
 
 cfg.CONF.register_opts(local.certgen_opts, group='certificates')
 cfg.CONF.register_opts(local.certmgr_opts, group='certificates')
