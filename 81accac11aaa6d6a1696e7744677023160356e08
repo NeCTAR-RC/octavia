@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "38a7e3fd_5b04b334",
+        "filename": "octavia/api/v2/controllers/load_balancer.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 472,
+      "author": {
+        "id": 1000077
+      },
+      "writtenOn": "2020-06-30T06:49:37Z",
+      "side": 1,
+      "message": "Does this need to specifically tested for None?",
+      "range": {
+        "startLine": 472,
+        "startChar": 12,
+        "endLine": 472,
+        "endChar": 30
+      },
+      "revId": "81accac11aaa6d6a1696e7744677023160356e08",
+      "serverId": "f182a8af-62ca-4ceb-ab81-14f8fec9c6c5",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f32a60f0_a08c1a39",
+        "filename": "octavia/common/config.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 728,
+      "author": {
+        "id": 1000077
+      },
+      "writtenOn": "2020-06-30T06:49:37Z",
+      "side": 1,
+      "message": "chosen",
+      "range": {
+        "startLine": 728,
+        "startChar": 49,
+        "endLine": 728,
+        "endChar": 56
+      },
+      "revId": "81accac11aaa6d6a1696e7744677023160356e08",
+      "serverId": "f182a8af-62ca-4ceb-ab81-14f8fec9c6c5",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "98f481fe_21a340a0",
+        "filename": "octavia/db/repositories.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 1959,
+      "author": {
+        "id": 1000077
+      },
+      "writtenOn": "2020-06-30T06:49:37Z",
+      "side": 1,
+      "message": "if not zones: ?",
+      "range": {
+        "startLine": 1959,
+        "startChar": 8,
+        "endLine": 1959,
+        "endChar": 25
+      },
+      "revId": "81accac11aaa6d6a1696e7744677023160356e08",
+      "serverId": "f182a8af-62ca-4ceb-ab81-14f8fec9c6c5",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b01d9d3e_cbd79ee6",
+        "filename": "octavia/db/repositories.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 1965,
+      "author": {
+        "id": 1000077
+      },
+      "writtenOn": "2020-06-30T06:49:37Z",
+      "side": 1,
+      "message": "this is begging for some list comprehension :D",
+      "range": {
+        "startLine": 1962,
+        "startChar": 0,
+        "endLine": 1965,
+        "endChar": 42
+      },
+      "revId": "81accac11aaa6d6a1696e7744677023160356e08",
+      "serverId": "f182a8af-62ca-4ceb-ab81-14f8fec9c6c5",
+      "unresolved": true
+    }
+  ]
+}
