@@ -48,7 +48,7 @@ def get_restricted_zones(project_id):
     cache = _get_cache()
     cache_key = 'restricted_zones-%s' % project_id
     zones = cache.get(cache_key)
-    LOG.warn("Found cached restricted zones: %s", zones)
+    LOG.warning("Found cached restricted zones: %s", zones)
 
     if not zones:
         ksession = keystone.KeystoneSession()
@@ -57,7 +57,7 @@ def get_restricted_zones(project_id):
         zones = getattr(project, 'compute_zones', ALL_ZONES)
         cache.set(cache_key, zones)
 
-        LOG.warn("Cached restricted zones: %s", zones)
+        LOG.warning("Cached restricted zones: %s", zones)
     if not zones or zones == ALL_ZONES:
         return None
 

@@ -1956,8 +1956,9 @@ class AvailabilityZoneRepository(_GetALLExceptDELETEDIdMixin, BaseRepository):
 
     def get(self, session, project_id=None, **filters):
         zone = super().get(session, **filters)
-        if zone is None or not CONF.nectar.restrict_zones \
-           or project_id is None:
+        if (zone is None or
+                not CONF.nectar.restrict_zones or
+                project_id is None):
             return zone
 
         zones = restricted_zones.get_restricted_zones(project_id)

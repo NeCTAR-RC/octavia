@@ -20,6 +20,8 @@ from oslo_cache import core as cache
 from oslo_config import cfg
 from oslo_log import log as logging
 
+from octavia.i18n import _
+
 
 CONF = cfg.CONF
 
@@ -90,8 +92,8 @@ def _get_custom_cache_region(expiration_time=WEEK,
     elif backend == 'dogpile.cache.memcached':
         region_params['arguments'] = {'url': url}
     else:
-        raise RuntimeError('old style configuration can use '
-                           'only dictionary or memcached backends')
+        raise RuntimeError(_('old style configuration can use '
+                             'only dictionary or memcached backends'))
 
     region.configure(backend, **region_params)
     return region
