@@ -144,11 +144,13 @@ class AllowedAddressPairsDriver(neutron_base.BaseNeutronDriver):
 
     def _get_ethertype_for_ip(self, ip):
         address = ipaddress.ip_address(ip)
-        return 'IPv6' if address.version == 6 else 'IPv4'
+        return (constants.ETHERTYPE_IPv6 if address.version == 6
+                else constants.ETHERTYPE_IPv4)
 
     def _update_security_group_rules(self, load_balancer, sec_grp_id):
         rules = self.neutron_client.list_security_group_rules(
             security_group_id=sec_grp_id)
+        vip_subnet = self.get_subnet(load_balancer.vip.subnet_id)
 
         updated_ports = []
         for listener in load_balancer.listeners:
@@ -214,12 +216,14 @@ class AllowedAddressPairsDriver(neutron_base.BaseNeutronDriver):
         # Currently we are using the VIP network for VRRP
         # so we need to open up the protocols for it
         if load_balancer.topology == constants.TOPOLOGY_ACTIVE_STANDBY:
+            vrrp_address = constants.VRRP_ADDRESS_CIDR.get(ethertype)
             try:
                 self._create_security_group_rule(
                     sec_grp_id,
                     constants.VRRP_PROTOCOL_NUM,
                     direction='ingress',
-                    ethertype=ethertype)
+                    ethertype=ethertype,
+                    cidr=vrrp_address)
             except neutron_client_exceptions.Conflict:
                 # It's ok if this rule already exists
                 pass
@@ -229,7 +233,8 @@ class AllowedAddressPairsDriver(neutron_base.BaseNeutronDriver):
             try:
                 self._create_security_group_rule(
                     sec_grp_id, constants.AUTH_HEADER_PROTOCOL_NUMBER,
-                    direction='ingress', ethertype=ethertype)
+                    direction='ingress', ethertype=ethertype,
+                    cidr=vip_subnet.cidr)
             except neutron_client_exceptions.Conflict:
                 # It's ok if this rule already exists
                 pass
