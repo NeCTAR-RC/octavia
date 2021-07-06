@@ -1,0 +1,14 @@
+Description: Disable sphinxcontrib.rsvgconverter until packaged
+Author: James Page <james.page@ubuntu.com>
+Forwarded: not-needed
+
+--- a/doc/source/conf.py
++++ b/doc/source/conf.py
+@@ -67,7 +67,6 @@ extensions = [
+     'oslo_config.sphinxext',
+     'oslo_policy.sphinxpolicygen',
+     'sphinxcontrib.apidoc',
+-    'sphinxcontrib.rsvgconverter',
+ ]
+ 
+ todo_include_todos = True

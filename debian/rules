@@ -1,0 +1,87 @@
+#!/usr/bin/make -f
+
+# Verbose mode
+#export DH_VERBOSE=1
+export OSLO_PACKAGE_VERSION=$(shell dpkg-parsechangelog | sed -n -e 's/^Version: //p')
+
+export PYBUILD_NAME=octavia
+
+include /usr/share/openstack-pkg-tools/pkgos.make
+
+export PBR_VERSION=$(OSLO_PACKAGE_VERSION)
+
+%:
+	dh $@ --with python3,sphinxdoc --buildsystem=pybuild
+
+override_dh_clean:
+	dh_clean
+	find . -iname '*.pyc' -delete
+	rm -f debian/*.init debian/*.service debian/*.upstart
+	rm -rf build
+	rm -rf octavia.sqlite
+	rm -rf .eggs
+	rm -rf doc/source/contributor/devref/flow_diagrams
+	rm -rf doc/source/contributor/modules
+	rm -f doc/source/configuration/_static/octavia.policy.yaml.sample
+	rm -f doc/source/contributor/devref/erd.svg
+
+override_dh_auto_build:
+	set -e ; for i in $(PYTHON3S) ; do \
+		python3 setup.py build --force ; \
+	done
+
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_func octavia-common.postinst
+	/usr/share/openstack-pkg-tools/pkgos_insert_include pkgos_postrm octavia-common.postrm
+
+override_dh_auto_test:
+ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	# NOTE(jamespage): https://bugs.launchpad.net/ubuntu/+source/octavia/+bug/1869171
+	# pkgos-dh_auto_test --no-py2 --black-regex '^octavia.tests.unit.certificates.manager.test_barbican_legacy.TestBarbicanManager.*'
+	# NOTE(coreycb): It appears that bug 1869171 may not be reproducing on groovy. Re-enabling all tests to see how it goes.
+	pkgos-dh_auto_test --no-py2
+endif
+
+override_dh_auto_install:
+	echo "Do nothing here..."
+
+override_dh_install:
+	for i in $(PYTHON3S) ; do \
+		python$$i setup.py install --root=debian/tmp --install-layout=deb ; \
+	done
+
+	# Generate the octavia.conf config using installed python-octavia files.
+	mkdir -p $(CURDIR)/debian/octavia-common/usr/share/octavia-common
+	PYTHONPATH=$(CURDIR)/debian/tmp/usr/lib/python3/dist-packages oslo-config-generator \
+		--output-file $(CURDIR)/debian/octavia-common/usr/share/octavia-common/octavia.conf \
+		--wrap-width 140 \
+		--namespace octavia \
+		--namespace oslo.db \
+		--namespace oslo.log \
+		--namespace oslo.messaging \
+		--namespace keystonemiddleware.auth_token
+
+	# Same with policy.conf
+	PYTHONPATH=$(CURDIR)/debian/tmp/usr/lib/python3/dist-packages oslopolicy-sample-generator \
+		--output-file $(CURDIR)/debian/octavia-common/usr/share/octavia-common/policy.json \
+		--format json \
+		--namespace octavia
+
+	# Restore sanity...
+	pkgos-fix-config-default $(CURDIR)/debian/octavia-common/usr/share/octavia-common/octavia.conf keystone_notifications enable True
+
+	rm -rf $(CURDIR)/debian/tmp/usr/etc
+	find debian/tmp/  -type d -name __pycache__ -exec rm -r {} \+
+
+	dh_install
+
+override_dh_sphinxdoc:
+ifeq (,$(findstring nodoc, $(DEB_BUILD_OPTIONS)))
+	python3 -m sphinx $(SPHINXOPTS) -b html doc/source $(CURDIR)/debian/octavia-doc/usr/share/doc/octavia-doc/html
+	dh_sphinxdoc -O--buildsystem=python_distutils
+endif
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+override_dh_python3:
+	dh_python3 --shebang=/usr/bin/python3

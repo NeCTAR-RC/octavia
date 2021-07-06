@@ -1,0 +1,284 @@
+octavia (7.1.1-0ubuntu1~cloud0) focal-victoria; urgency=medium
+
+  * New upstream release for the Ubuntu Cloud Archive.
+
+ -- Openstack Ubuntu Testing Bot <openstack-testing-bot@ubuntu.com>  Mon, 19 Apr 2021 15:42:21 +0000
+
+octavia (7.1.1-0ubuntu1) groovy; urgency=medium
+
+  * New stable point release for OpenStack Victoria (LP: #1923035).
+
+ -- Chris MacNaughton <chris.macnaughton@ubuntu.com>  Thu, 08 Apr 2021 13:54:25 +0000
+
+octavia (7.1.0-0ubuntu1) groovy; urgency=medium
+
+  [ Corey Bryant ]
+  * d/gbp.conf: Create stable/victoria branch.
+
+  [ Chris MacNaughton ]
+  * New stable point release for OpenStack Victoria (LP: #1915785).
+
+ -- Chris MacNaughton <chris.macnaughton@ubuntu.com>  Tue, 16 Feb 2021 13:30:47 +0000
+
+octavia (7.0.0-0ubuntu1) groovy; urgency=medium
+
+  * New upstream release for OpenStack Victoria.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Thu, 15 Oct 2020 09:45:32 -0400
+
+octavia (7.0.0~rc1-0ubuntu1) groovy; urgency=medium
+
+  [ Chris MacNaughton ]
+  * d/control: Update VCS paths for move to lp:~ubuntu-openstack-dev.
+
+  [ Corey Bryant ]
+  * New upstream release candidate for OpenStack Victoria.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/p/drop-diskimage-builder.patch: Dropped. Fixed upstream in rc1.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 09 Oct 2020 13:03:56 -0400
+
+octavia (7.0.0~b3~git2020091410.b400620a-0ubuntu1) groovy; urgency=medium
+
+  * New upstream snapshot for OpenStack Victoria.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/p/drop-diskimage-builder.patch: Refreshed.
+
+ -- Chris MacNaughton <chris.macnaughton@canonical.com>  Mon, 14 Sep 2020 10:36:48 +0000
+
+octavia (7.0.0~b2~git2020073014.c78a1b2c-0ubuntu1) groovy; urgency=medium
+
+  * New upstream snapshot for OpenStack Victoria.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Thu, 30 Jul 2020 14:39:00 -0400
+
+octavia (7.0.0~b1~git2020070215.f68e3aba-0ubuntu5) groovy; urgency=medium
+
+  * d/rules, d/octavia-common.postinst.in: Restore items that are necessary
+    for octavia-common .in file generation.
+  * d/control, d/tests/*: Add autopkgtests.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Mon, 20 Jul 2020 13:27:19 -0400
+
+octavia (7.0.0~b1~git2020070215.f68e3aba-0ubuntu4) groovy; urgency=medium
+
+  * d/control, d/py3dist-overrides: Move python3-gunicorn to amphora-agent
+    binary package as current MIR approach is to keep amphora-agent in
+    universe.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Mon, 20 Jul 2020 11:35:47 -0400
+
+octavia (7.0.0~b1~git2020070215.f68e3aba-0ubuntu3) groovy; urgency=medium
+
+  * d/control: Drop python3-diskimage-builder as it is not needed
+    for octavia proper build/run-time. It is used to build amphora images.
+  * d/p/drop-diskimage-builder.patch: Drop diskimage-builder from Depends in
+    line with https://storyboard.openstack.org/#!/story/2007934.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Mon, 20 Jul 2020 10:43:49 -0400
+
+octavia (7.0.0~b1~git2020070215.f68e3aba-0ubuntu2) groovy; urgency=medium
+
+  * d/control, d/rules, d/*.config.in, d/*.postinst.in, d/*.prerm: Remove
+    debconf config management.
+  * d/rules: Re-enable all tests to as bug 1869171 may no longer reproduce
+    in groovy.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 17 Jul 2020 13:21:53 -0400
+
+octavia (7.0.0~b1~git2020070215.f68e3aba-0ubuntu1) groovy; urgency=medium
+
+  * New upstream snapshot for OpenStack Victoria.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/control: Update Standards-Version to 4.5.0.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Thu, 02 Jul 2020 15:23:10 -0400
+
+octavia (6.0.0-0ubuntu1) groovy; urgency=medium
+
+  * New upstream release for OpenStack Ussuri (LP: #1877642).
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Thu, 14 May 2020 14:43:41 -0400
+
+octavia (6.0.0~b3~git2020041014.771a5d87-0ubuntu1) focal; urgency=medium
+
+  * New upstream snapshot for OpenStack Ussuri.
+  * d/octavia-common.postinst.in: Set ownership and permissions for all /var/lib
+    files and directories.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 10 Apr 2020 14:17:54 -0400
+
+octavia (6.0.0~b3~git2020032609.73fca169-0ubuntu1) focal; urgency=medium
+
+  * New upstream snapshot for OpenStack Ussuri.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/octavia-common.postinst: Refactor to standardise /etc, /var/lib and
+    /var/log ownership and permissions (LP: #1859422).
+  * d/rules: Blacklist failing unit tests due to odd Mock behaviour
+    under Python 3.8.
+
+ -- James Page <james.page@ubuntu.com>  Tue, 31 Mar 2020 13:14:50 +0100
+
+octavia (6.0.0~b2~git2020020614.005cd1e6-0ubuntu2) focal; urgency=medium
+
+  [ Frode Nordahl ]
+  * d/control,octavia-driver-agent.init.in: Add binary package for driver agent.
+    (LP: #1861671)
+
+  [ James Page ]
+  * d/*: wrap-and-sort -bast.
+  * d/control: Drop duplicate BD on pythnon3-pbr.
+  * d/rules: Map PBR_VERSION directly to OSLO_PACKAGE_VERSION.
+  * d/control: Add Pre-Depends to all binary packages.
+
+ -- Frode Nordahl <frode.nordahl@canonical.com>  Thu, 20 Feb 2020 12:05:13 +0000
+
+octavia (6.0.0~b2~git2020020614.005cd1e6-0ubuntu1) focal; urgency=medium
+
+  * New upstream snapshot for OpenStack Ussuri.
+
+ -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Thu, 06 Feb 2020 15:04:49 +0100
+
+octavia (6.0.0~b1~git2019121614.45cb1e4e-0ubuntu1) focal; urgency=medium
+
+  * New upstream snapshot for OpenStack Ussuri.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/control, d/rules, d/compat: Switch to debhelper compat 12 and pybuild.
+  * d/rules: Update PBR_VERSION to handle ~git versioning.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Mon, 16 Dec 2019 14:51:56 -0500
+
+octavia (5.0.0-0ubuntu1) eoan; urgency=medium
+
+  * New upstream release for OpenStack Train.
+
+ -- James Page <james.page@ubuntu.com>  Wed, 16 Oct 2019 16:11:50 +0100
+
+octavia (5.0.0~rc2-0ubuntu1) eoan; urgency=high
+
+  * SECURITY UPDATE: New upstream release candidate including
+    security fix to enforce two-way authentication between
+    amphora agents and the octavia control plane (LP: #1847243):
+    - CVE-2019-17134
+
+ -- James Page <james.page@ubuntu.com>  Wed, 09 Oct 2019 17:23:31 +0100
+
+octavia (5.0.0~rc1-0ubuntu1) eoan; urgency=medium
+
+  * New upstream release for OpenStack Train.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/p/disable-sphinxcontrib.rsvgconverter.patch: Disable use of
+    sphinxcontrib.rsvgconverter until packaged.
+
+ -- James Page <james.page@ubuntu.com>  Fri, 27 Sep 2019 11:17:28 +0100
+
+octavia (5.0.0~b2~git2019073019.f80f25e8-0ubuntu1) eoan; urgency=medium
+
+  * New upstream snapshot for OpenStack Train.
+  * d/control: Align (Build-)Depends with upstream.
+
+ -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Tue, 30 Jul 2019 19:07:33 +0200
+
+octavia (5.0.0~b1~git2019061341.620c1980-0ubuntu1) eoan; urgency=medium
+
+  * New upstream snapshot for OpenStack Train.
+  * d/p/*: Dropped, included in snapshot.
+  * d/rules: Drop python3- prefix for policy and config generation.
+  * d/control: Add python3-sphinx-feature-classification to BD's.
+
+ -- James Page <james.page@ubuntu.com>  Thu, 13 Jun 2019 17:07:19 +0100
+
+octavia (4.0.0-0ubuntu2) eoan; urgency=medium
+
+  * d/p/bug1826875.patch: Cherry-picked from upstream to prevent
+    issue when percona is configured with pxc-strict-mode=ENFORCING
+    (LP: #1826875).
+
+ -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Thu, 16 May 2019 17:23:52 +0200
+
+octavia (4.0.0-0ubuntu1) disco; urgency=medium
+
+  * Upstream release for OpenStack Stein.
+
+ -- Sahid Orentino Ferdjaoui <sahid.ferdjaoui@canonical.com>  Fri, 12 Apr 2019 11:43:11 +0100
+
+octavia (4.0.0~rc1-0ubuntu1) disco; urgency=medium
+
+  * New upstream release candidate for OpenStack Stein.
+
+ -- James Page <james.page@ubuntu.com>  Fri, 22 Mar 2019 11:05:21 +0000
+
+octavia (4.0.0~b1~git2019031922.ae26cf9e-0ubuntu1) disco; urgency=medium
+
+  [ Corey Bryant ]
+  * d/octavia-common.postinst.in: Change /etc/octavia owner to root:octavia.
+    Note: pkgos_write_new_conf correctly sets perms of /etc/octavia to 0750.
+  * d/octavia-common.postinst.in: Drop tabs in favor of spaces.
+
+  [ James Page ]
+  * New upstream snapshot for OpenStack Stein.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/p/*: Dropped, included in snapshot.
+
+ -- James Page <james.page@ubuntu.com>  Tue, 19 Mar 2019 11:18:04 +0000
+
+octavia (4.0.0~b1~git2019013112.979144f2-0ubuntu1) disco; urgency=medium
+
+  * New upstream snapshot for OpenStack Stein.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/p/add-missing-import-octavia-opts.py.patch: Add missing import to
+    enable generation of config files.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 01 Feb 2019 10:54:10 -0500
+
+octavia (4.0.0~b1~git2018111913.c07612ab-0ubuntu1) disco; urgency=medium
+
+  * New upstream snapshot for OpenStack Stein.
+  * d/control: Align (Build-)Depends with upstream.
+  * d/rules: Ensure python3 shebangs are set to /usr/bin/python3.
+  * d/control: Set min openstack-pkg-tools >= 85ubuntu3~.
+  * d/p/disable-sphinxcontrib.apidoc.patch: Dropped. No longer needed.
+  * d/p/py36-compat.patch: Dropped. Fixed in upstream snapshot.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Mon, 19 Nov 2018 13:48:27 -0500
+
+octavia (3.0.0-0ubuntu3) cosmic; urgency=medium
+
+  * d/octavia-api.init.in: Drop UWSGI settings as API is not being run under
+    uwsgi (LP: #1798891).
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Fri, 19 Oct 2018 15:12:23 -0400
+
+octavia (3.0.0-0ubuntu2) cosmic; urgency=medium
+
+  * d/control,amphora-agent.init.in: Add binary package for amphora
+    service VM usage.
+
+ -- James Page <james.page@ubuntu.com>  Fri, 14 Sep 2018 14:35:42 -0600
+
+octavia (3.0.0-0ubuntu1) cosmic; urgency=medium
+
+  * d/gbp.conf: Update gbp configuration file.
+  * d/control: Update Vcs-* links.
+  * New upstream release for OpenStack Rocky.
+
+ -- Corey Bryant <corey.bryant@canonical.com>  Thu, 30 Aug 2018 16:18:02 -0400
+
+octavia (3.0.0~rc1-0ubuntu1) cosmic; urgency=medium
+
+  * d/watch: Use upstream release tarballs.
+  * New upstream release candidate for OpenStack Rocky.
+  * Align (Build-)Depends with upstream.
+  * d/patches: Drop all patches, all upstream.
+  * d/p/py36-compat.patch: Compat patch for unit test failure under
+    Python >= 3.6.
+  * d/p/disable-sphinxcontrib.apidoc.patch: Disable apidoc extension
+    usage when generating docs.
+
+ -- James Page <james.page@ubuntu.com>  Fri, 17 Aug 2018 06:48:15 +0100
+
+octavia (2.0.1-1) unstable; urgency=medium
+
+  * Initial release (Closes: #901440).
+
+ -- Michal Arbet <michal.arbet@ultimum.io>  Wed, 13 Jun 2018 13:21:52 +0100
