@@ -1,3 +1,2 @@
 disable-sphinxcontrib.rsvgconverter.patch
-0001-Fix-duplicate-SG-creation-for-listener-peer-port.patch
 fix-manifest.patch 
