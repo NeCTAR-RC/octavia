@@ -1,0 +1,8 @@
+Tests: octavia-daemons
+Depends:
+ octavia-api,
+ octavia-driver-agent,
+ octavia-health-manager,
+ octavia-housekeeping,
+ octavia-worker,
+Restrictions: needs-root

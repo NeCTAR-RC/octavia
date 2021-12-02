@@ -1,0 +1,18 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          amphora-agent
+# Required-Start:    $network $local_fs $remote_fs $syslog
+# Required-Stop:     $remote_fs
+# Should-Start:      postgresql mysql keystone rabbitmq-server ntp
+# Should-Stop:       postgresql mysql keystone rabbitmq-server ntp
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Octavia LBaaS Amphora agent
+# Description:       Octavia Amphora agent
+### END INIT INFO
+
+# Author: Michal Arbet <michal.arbet@ultimum.io>
+
+DESC="OpenStack Octavia Amphora Agent (amphora-agent)"
+PROJECT_NAME=octavia
+NAME=amphora-agent

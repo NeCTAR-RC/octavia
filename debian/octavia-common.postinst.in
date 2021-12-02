@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -e
+
+CONF=/etc/octavia/octavia.conf
+
+#PKGOS-INCLUDE#
+
+if [ "$1" = "configure" ] || [ "$1" = "reconfigure" ] ; then
+    pkgos_var_user_group octavia /bin/sh
+
+    # Create config files if they don't exist
+    pkgos_write_new_conf octavia octavia.conf
+    pkgos_write_new_conf octavia policy.json
+
+    chown octavia:adm /var/log/octavia
+    chmod 0750 /var/log/octavia
+
+    find /etc/octavia -exec chown root:octavia "{}" +
+    find /etc/octavia -type f -exec chmod 0640 "{}" + -o -type d -exec chmod 0750 "{}" +
+
+    find /var/lib/octavia -exec chown octavia:octavia "{}" +
+    find /var/lib/octavia -type f -exec chmod 0640 "{}" + -o -type d -exec chmod 0750 "{}" +
+fi
+
+#DEBHELPER#
+
+exit 0

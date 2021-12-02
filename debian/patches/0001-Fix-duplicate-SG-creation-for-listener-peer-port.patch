@@ -1,0 +1,118 @@
+From e692201fad32ba1e4afc33463df567bd70fcdab0 Mon Sep 17 00:00:00 2001
+From: Hemanth Nakkina <hemanth.nakkina@canonical.com>
+Date: Fri, 13 Aug 2021 11:54:59 +0530
+Subject: [PATCH] Fix duplicate SG creation for listener peer port
+
+In cases where the listener protcol port is same as the peer port
+and allowed_cidr set to 0.0.0.0/0 explicitly, the listener is not
+provisioned due to duplicate security group creation for peer port
+with None as remote_ip_prefix. Neutron SG defaults remote_ip_prefix
+to 0.0.0.0/0 if not specified or None and hence the error SG rule
+already exists.
+
+Remove the duplicate entry from the updated_ports.
+
+Story: #2009117
+Change-Id: I9dbdb71e9b94bbcc75766a8687a996d5358f3381
+(cherry picked from commit 151a94321074b1eda53d1a582fdf26942db85afd)
+---
+ .../drivers/neutron/allowed_address_pairs.py  | 17 +++++++----
+ .../neutron/test_allowed_address_pairs.py     | 30 +++++++++++++++++++
+ ...uplicate-sg-creation-0c502a5d2d8c276d.yaml |  9 ++++++
+ 3 files changed, 51 insertions(+), 5 deletions(-)
+ create mode 100644 releasenotes/notes/fix-duplicate-sg-creation-0c502a5d2d8c276d.yaml
+
+diff --git a/octavia/network/drivers/neutron/allowed_address_pairs.py b/octavia/network/drivers/neutron/allowed_address_pairs.py
+index 46047419..e7fa1c50 100644
+--- a/octavia/network/drivers/neutron/allowed_address_pairs.py
++++ b/octavia/network/drivers/neutron/allowed_address_pairs.py
+@@ -152,6 +152,7 @@ class AllowedAddressPairsDriver(neutron_base.BaseNeutronDriver):
+             security_group_id=sec_grp_id)
+ 
+         updated_ports = []
++        listener_peer_ports = []
+         for listener in load_balancer.listeners:
+             if (listener.provisioning_status in [constants.PENDING_DELETE,
+                                                  constants.DELETED]):
+@@ -171,11 +172,17 @@ class AllowedAddressPairsDriver(neutron_base.BaseNeutronDriver):
+                 port = (listener.protocol_port, protocol, None)
+                 updated_ports.append(port)
+ 
+-            # As the peer port will hold the tcp connection for keepalived and
+-            # haproxy session synchronization, so here the security group rule
+-            # should be just related with tcp protocol only.
+-            updated_ports.append(
+-                (listener.peer_port, constants.PROTOCOL_TCP.lower(), None))
++            listener_peer_ports.append(listener.peer_port)
++
++        # As the peer port will hold the tcp connection for keepalived and
++        # haproxy session synchronization, so here the security group rule
++        # should be just related with tcp protocol only. To avoid adding
++        # duplicate rules, peer_port info should be added if updated_ports
++        # does not have the peer_port entry with allowed_cidr 0.0.0.0/0
++        tcp_lower = constants.PROTOCOL_TCP.lower()
++        for peer_port in listener_peer_ports:
++            if (peer_port, tcp_lower, "0.0.0.0/0") not in updated_ports:
++                updated_ports.append((peer_port, tcp_lower, None))
+ 
+         # Just going to use port_range_max for now because we can assume that
+         # port_range_max and min will be the same since this driver is
+diff --git a/octavia/tests/unit/network/drivers/neutron/test_allowed_address_pairs.py b/octavia/tests/unit/network/drivers/neutron/test_allowed_address_pairs.py
+index 020f6fe9..710ce602 100644
+--- a/octavia/tests/unit/network/drivers/neutron/test_allowed_address_pairs.py
++++ b/octavia/tests/unit/network/drivers/neutron/test_allowed_address_pairs.py
+@@ -1047,6 +1047,36 @@ class TestAllowedAddressPairsDriver(base.TestCase):
+                                       mock.call(expected_create_rule_udp)],
+                                      any_order=True)
+ 
++    def test_update_vip_when_protocol_and_peer_ports_overlap(self):
++        lc_1 = data_models.ListenerCidr('l1', '0.0.0.0/0')
++        listeners = [data_models.Listener(protocol_port=80, peer_port=1024,
++                                          protocol=constants.PROTOCOL_TCP),
++                     data_models.Listener(protocol_port=443, peer_port=1025,
++                                          protocol=constants.PROTOCOL_TCP),
++                     data_models.Listener(protocol_port=1025, peer_port=1026,
++                                          protocol=constants.PROTOCOL_TCP,
++                                          allowed_cidrs=[lc_1])]
++        vip = data_models.Vip(ip_address='10.0.0.2')
++        lb = data_models.LoadBalancer(id='1', listeners=listeners, vip=vip)
++        list_sec_grps = self.driver.neutron_client.list_security_groups
++        list_sec_grps.return_value = {'security_groups': [{'id': 'secgrp-1'}]}
++        fake_rules = {
++            'security_group_rules': [
++                {'id': 'rule-80', 'port_range_max': 80, 'protocol': 'tcp'},
++                {'id': 'rule-22', 'port_range_max': 22, 'protocol': 'tcp'}
++            ]
++        }
++        list_rules = self.driver.neutron_client.list_security_group_rules
++        list_rules.return_value = fake_rules
++        delete_rule = self.driver.neutron_client.delete_security_group_rule
++        create_rule = self.driver.neutron_client.create_security_group_rule
++        self.driver.update_vip(lb)
++        delete_rule.assert_called_once_with('rule-22')
++
++        # Create SG rule calls should be 4, each for port 1024/1025/1026/443
++        # No duplicate SG creation for overlap port 1025
++        self.assertEqual(4, create_rule.call_count)
++
+     def test_update_vip_when_listener_deleted(self):
+         listeners = [data_models.Listener(protocol_port=80,
+                                           protocol=constants.PROTOCOL_TCP),
+diff --git a/releasenotes/notes/fix-duplicate-sg-creation-0c502a5d2d8c276d.yaml b/releasenotes/notes/fix-duplicate-sg-creation-0c502a5d2d8c276d.yaml
+new file mode 100644
+index 00000000..5d0de32b
+--- /dev/null
++++ b/releasenotes/notes/fix-duplicate-sg-creation-0c502a5d2d8c276d.yaml
+@@ -0,0 +1,9 @@
++---
++fixes:
++  - |
++    Fixes loadbalancer creation failure when one of the listener port matches
++    with the octavia generated peer ports and the allowed_cidr is explicitly
++    set to 0.0.0.0/0 on the listener. This is due to creation of two security
++    group rules with remote_ip_prefix as None and remote_ip_prefix as 0.0.0.0/0
++    which neutron rejects the second request with security group rule already
++    exists.
+-- 
+2.25.1
+

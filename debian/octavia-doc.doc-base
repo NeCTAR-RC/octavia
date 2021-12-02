@@ -1,0 +1,9 @@
+Document: octavia-doc
+Title: Octavia Documentation
+Author: N/A
+Abstract: Sphinx documentation for Octavia
+Section: Programming/Python
+
+Format: HTML
+Index: /usr/share/doc/octavia-doc/html/index.html
+Files: /usr/share/doc/octavia-doc/html/*

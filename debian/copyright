@@ -1,0 +1,44 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: octavia
+Source: https://github.com/openstack/octavia
+
+Files: *
+Copyright: (c) 2014-2018, Rackspace
+           (c) 2011-2015, OpenStack Foundation
+           (c) 2015-2016, Blue Box, an IBM Company
+           (c) 2016, IBM
+           (c) 2013-2016, Hewlett-Packard Development Company, L.P.
+           (c) 2014, Doug Wiegley, A10 Networks.
+           (c) 2014, VA Linux Systems Japan K.K.
+           (c) 2014, YAMAMOTO Takashi <yamamoto at valinux co jp>
+           (c) 2017, GoDaddy
+           (c) 2016-2017, Intel
+           (c) 2017, Redhat
+           (c) 2014, Min Wang, German Eichberger
+           (c) 2011-2016, VMware, Inc
+           (c) 2013-2014, The Johns Hopkins University/Applied Physics Laboratory
+           (c) 2016, Catalyst IT Ltd.
+           (c) 2017, Huawei
+           (c) 2017, EayunStack, Inc.
+License: Apache-2.0
+
+Files: debian/*
+Copyright: (c) 2018, Thomas Goirand <zigo@debian.org>
+           (c) 2018, Michal Arbet <michal.arbet@ultimum.io>
+License: Apache-2.0
+
+License: Apache-2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ .
+    http://www.apache.org/licenses/LICENSE-2.0
+ .
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ .
+ On Debian-based systems the full text of the Apache version 2.0 license
+ can be found in `/usr/share/common-licenses/Apache-2.0'.
