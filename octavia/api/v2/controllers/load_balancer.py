@@ -411,6 +411,9 @@ class LoadBalancersController(base.BaseController):
             except sa_exception.NoResultFound as e:
                 raise exceptions.ValidationException(
                     detail=_("Invalid availability_zone.")) from e
+        elif driver.name == 'ovn':
+            # OVN doesn't support AZ so don't auomatically set one
+            pass
         elif CONF.nectar.restrict_zones:
             zones = restricted_zones.get_restricted_zones(
                 lb_dict['project_id'])
