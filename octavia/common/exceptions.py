@@ -387,13 +387,13 @@ class ProviderDriverError(APIException):
 class ProviderNotImplementedError(APIException):
     msg = _("Provider '%(prov)s' does not support a requested action: "
             "%(user_msg)s")
-    code = 501
+    code = 400
 
 
 class ProviderUnsupportedOptionError(APIException):
     msg = _("Provider '%(prov)s' does not support a requested option: "
             "%(user_msg)s")
-    code = 501
+    code = 400
 
 
 class InputFileError(OctaviaException):
